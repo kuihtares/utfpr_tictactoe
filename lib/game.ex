@@ -15,15 +15,29 @@ defmodule Game do
     IO.puts("Current board")
     IO.puts(Board.display_board(board))
 
-    IO.puts("In what position (line, column) do you want to play, player #{current_player}?")
-    {line, column} = process_input_string(IO.gets("Choose between (1,1) and (4,4): "))
+    case Rule.check_winner(board.cells) do
+      {:winner, symbol} ->
+        IO.puts("\n PLAYER #{String.upcase(to_string(symbol))} WINS! ")
+        :winner_found
 
-    if line in 1..4 and column in 1..4 do
-      new_board = Board.play(board, Player.new(current_player, 999), (line - 1) * 4 + column)
-      play(rest ++ [current_player], new_board)
-    else
-      IO.puts("Wrong position!")
-      play(players, board)
+      :no_winner ->
+        if Rule.board_full?(board) do
+          IO.puts("\nIT'S A DRAW!")
+          IO.puts("The board is full with no winner!")
+          IO.puts("Game Over!\n")
+          :draw
+        else
+          IO.puts("In what position (line, column) do you want to play, player #{current_player}?")
+          {line, column} = process_input_string(IO.gets("Choose between (1,1) and (4,4): "))
+
+          if line in 1..4 and column in 1..4 do
+            new_board = Board.play(board, Player.new(current_player, 999), (line - 1) * 4 + column)
+            play(rest ++ [current_player], new_board)
+          else
+            IO.puts("Wrong position!")
+            play(players, board)
+          end
+        end
     end
   end
 
